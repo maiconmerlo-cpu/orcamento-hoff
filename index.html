@@ -72,6 +72,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--azul-cla
 <fieldset>
 <legend>Observa&ccedil;&otilde;es</legend>
 <textarea id="obs" rows="3" placeholder="Prazo de entrega, condi&ccedil;&otilde;es, validade..."></textarea>
+<label for="evento">Evento</label>
+<input id="evento" list="eventos" autocomplete="off" placeholder="Feira, evento ou a&ccedil;&atilde;o comercial">
+<datalist id="eventos"></datalist>
 <label for="vendedor">Vendedor</label>
 <input id="vendedor" placeholder="Seu nome">
 </fieldset>
@@ -197,6 +200,7 @@ function coletar(){
     cidade: document.getElementById('cidade').value.trim(),
     uf: document.getElementById('uf').value,
     vendedor: document.getElementById('vendedor').value.trim(),
+    evento: document.getElementById('evento').value.trim(),
     observacoes: document.getElementById('obs').value.trim(),
     itens: itens,
     total: itens.reduce(function(a,i){return a+i.subtotal;},0),
@@ -282,6 +286,7 @@ document.getElementById('gerar').addEventListener('click', function(){
     '\nITENS\n'+linhas+
     '\n\nTOTAL: '+brl(o.total)+
     (o.observacoes?'\n\nObs: '+o.observacoes:'')+
+    (o.evento?'\n\nEvento: '+o.evento:'')+
     (o.vendedor?'\n\nVendedor: '+o.vendedor:'')+
     '\n\nValores sujeitos a disponibilidade de estoque.';
   if(navigator.share){
@@ -333,6 +338,25 @@ function guardarCidade(c){
 }
 cidEl.addEventListener('blur', function(){ guardarCidade(cidEl.value); });
 carregarCidades();
+
+var evEl = document.getElementById('evento');
+var dlEv = document.getElementById('eventos');
+function carregarEventos(){
+  var g = [];
+  try { g = JSON.parse(localStorage.getItem('hoff_eventos')||'[]'); } catch(e){}
+  dlEv.innerHTML = g.map(function(c){ return '<option value="'+c+'">'; }).join('');
+}
+function guardarEvento(c){
+  if(!c) return;
+  var g = [];
+  try { g = JSON.parse(localStorage.getItem('hoff_eventos')||'[]'); } catch(e){}
+  c = c.trim();
+  if(g.indexOf(c) < 0){ g.push(c); g.sort(); }
+  try { localStorage.setItem('hoff_eventos', JSON.stringify(g)); } catch(e){}
+  carregarEventos();
+}
+evEl.addEventListener('blur', function(){ guardarEvento(evEl.value); });
+carregarEventos();
 
 novoItem();
 </script>
