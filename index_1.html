@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Or&ccedil;amento &mdash; Grupo Hoff</title>
+<style>
+:root{--azul:#1E5C99;--azul-claro:#4A9BE8;--tinta:#0F1B28;--linha:#D4DDE6;--fundo:#F2F5F8;--suave:#6B7C8D}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--fundo);color:var(--tinta);padding:0 0 120px;font-size:16px}
+header{background:var(--tinta);color:#fff;padding:20px 18px}
+header b{font-size:20px;font-weight:700;letter-spacing:.5px}
+header span{display:block;font-size:13px;color:#8CA3B8;margin-top:3px}
+main{max-width:640px;margin:0 auto;padding:18px}
+fieldset{border:none;background:#fff;border-radius:12px;padding:18px;margin-bottom:16px;border:1px solid var(--linha)}
+legend{font-size:13px;font-weight:700;color:var(--azul);text-transform:uppercase;letter-spacing:1px;padding:0 0 12px}
+label{display:block;font-size:13px;color:var(--suave);margin:12px 0 5px;font-weight:600}
+input,select,textarea{width:100%;font:inherit;font-size:16px;padding:12px;border:1px solid var(--linha);border-radius:8px;background:#fff;color:var(--tinta)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--azul-claro);box-shadow:0 0 0 3px rgba(74,155,232,.15)}
+.item{border:1px solid var(--linha);border-radius:10px;padding:14px;margin-bottom:12px;background:#FAFCFE;position:relative}
+.item h4{font-size:12px;color:var(--azul);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.remover{position:absolute;top:10px;right:10px;background:none;border:none;color:#B33;font-size:22px;width:32px;height:32px;cursor:pointer;padding:0}
+.dupla{display:flex;gap:10px}
+.dupla>div{flex:1}
+.sub{text-align:right;font-size:15px;color:var(--suave);margin-top:10px}
+.sub b{color:var(--tinta);font-size:18px}
+.add{width:100%;padding:14px;background:#fff;border:2px dashed var(--azul-claro);color:var(--azul);border-radius:10px;font:inherit;font-weight:600;font-size:15px;cursor:pointer}
+.total{position:fixed;bottom:0;left:0;right:0;background:var(--tinta);color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.total span{font-size:13px;color:#8CA3B8;display:block}
+.total b{font-size:26px;font-weight:700}
+.total button{background:var(--azul-claro);color:var(--tinta);border:none;border-radius:9px;padding:14px 20px;font:inherit;font-weight:700;font-size:15px;cursor:pointer;white-space:nowrap}
+.busca{position:relative}
+.lista{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--linha);border-radius:8px;max-height:230px;overflow-y:auto;z-index:20;display:none;box-shadow:0 8px 20px rgba(0,0,0,.12)}
+.lista div{padding:11px 12px;font-size:14px;border-bottom:1px solid #EEF2F6;cursor:pointer;line-height:1.35}
+.lista div:hover,.lista div.sel{background:#EBF4FD}
+.lista small{display:block;color:var(--suave);font-size:11px;margin-top:2px}
+@media print{
+ header,.total,.add,.remover,.busca .lista{display:none}
+ body{background:#fff;padding:0}
+ fieldset{border:none;page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<header><b>OR&Ccedil;AMENTO</b><span>Grupo Hoff &middot; Pneus e servi&ccedil;os</span></header>
+<main>
+<fieldset>
+<legend>Dados do cliente</legend>
+<label for="nome">Nome do cliente</label>
+<input id="nome" autocomplete="name" placeholder="Nome ou raz&atilde;o social">
+<label for="cnpj">CNPJ</label>
+<input id="cnpj" inputmode="numeric" placeholder="00.000.000/0000-00">
+<label for="celular">Celular</label>
+<input id="celular" type="tel" inputmode="numeric" autocomplete="tel" placeholder="(51) 99999-9999">
+<label for="endereco">Endere&ccedil;o</label>
+<textarea id="endereco" rows="2" placeholder="Rua, n&uacute;mero, bairro"></textarea>
+<div class="dupla">
+  <div style="flex:2"><label for="cidade">Cidade</label>
+  <input id="cidade" list="cidades" autocomplete="address-level2" placeholder="Cidade"></div>
+  <div style="flex:1"><label for="uf">UF</label>
+  <select id="uf"><option value="RS">RS</option><option value="SC">SC</option><option value="PR">PR</option><option value="">--</option></select></div>
+</div>
+<datalist id="cidades"></datalist>
+</fieldset>
+
+<fieldset>
+<legend>Itens</legend>
+<div id="itens"></div>
+<button type="button" class="add" id="add">+ Adicionar item</button>
+</fieldset>
+
+<fieldset>
+<legend>Observa&ccedil;&otilde;es</legend>
+<textarea id="obs" rows="3" placeholder="Prazo de entrega, condi&ccedil;&otilde;es, validade..."></textarea>
+<label for="evento">Evento</label>
+<input id="evento" list="eventos" autocomplete="off" placeholder="Feira, evento ou a&ccedil;&atilde;o comercial">
+<datalist id="eventos"></datalist>
+<label for="vendedor">Vendedor</label>
+<input id="vendedor" placeholder="Seu nome">
+</fieldset>
+</main>
+
+<div id="pendentes" style="display:none;position:fixed;bottom:74px;left:0;right:0;background:#8A5A00;color:#fff;padding:10px 18px;font-size:13px;text-align:center;cursor:pointer;z-index:30"></div>
+<div class="total">
+  <div><span>Total do or&ccedil;amento</span><b id="total">R$ 0,00</b></div>
+  <button type="button" id="gerar">Gerar or&ccedil;amento</button>
+</div>
+
+<script>
+var PRODUTOS = [{"linha":"TBR - Radial","codigo":"101566","descricao":"PNEU BRIDGESTONE M814 215/75R17.5","marca":"BRIDGESTONE"},{"linha":"TBR - Radial","codigo":"101567","descricao":"PNEU BRIDGESTONE M814 235/75R17.5","marca":"BRIDGESTONE"},{"linha":"TBR - Radial","codigo":"101578","descricao":"PNEU BRIDGESTONE R268 275/70R22.5","marca":"BRIDGESTONE"},{"linha":"TBR - Radial","codigo":"13416","descricao":"PNEU BRIDGESTONE R289 295/80R22.5","marca":"BRIDGESTONE"},{"linha":"TBR - Radial","codigo":"101590","descricao":"PNEU BRIDGESTONE R269 275/80R22.5","marca":"BRIDGESTONE"},{"linha":"TBR - Radial","codigo":"101589","descricao":"PNEU BRIDGESTONE R269 295/80R22.5","marca":"BRIDGESTONE"},{"linha":"TBR - Radial","codigo":"11654","descricao":"PNEU BRIDGESTONE R249 295/80R22.5","marca":"BRIDGESTONE"},{"linha":"TBR - Radial","codigo":"12499","descricao":"PNEU BRIDGESTONE M765 275/80R22.5","marca":"BRIDGESTONE"},{"linha":"TBR - Radial","codigo":"11653","descricao":"PNEU BRIDGESTONE M765 295/80R22.5","marca":"BRIDGESTONE"},{"linha":"TBR - Radial","codigo":"101577","descricao":"PNEU BRIDGESTONE M736 275/80R22.5","marca":"BRIDGESTONE"},{"linha":"TBR - Radial","codigo":"101575","descricao":"PNEU BRIDGESTONE M736 295/80R22.5","marca":"BRIDGESTONE"},{"linha":"TBR - Radial","codigo":"101629","descricao":"PNEU BRIDGESTONE R163 295/80R22.5","marca":"BRIDGESTONE"},{"linha":"TBR - Radial","codigo":"12778","descricao":"PNEU BRIDGESTONE R167 275/80R22.5","marca":"BRIDGESTONE"},{"linha":"TBR - Radial","codigo":"12829","descricao":"PNEU BRIDGESTONE R167 295/80R22.5","marca":"BRIDGESTONE"},{"linha":"TBR - Radial","codigo":"101587","descricao":"PNEU BRIDGESTONE M842 275/80R22.5","marca":"BRIDGESTONE"},{"linha":"TBR - Radial","codigo":"101586","descricao":"PNEU BRIDGESTONE M842 295/80R22.5","marca":"BRIDGESTONE"},{"linha":"TBR - Radial","codigo":"101321","descricao":"PNEU BRIDGESTONE L325Z 275/80R22.5","marca":"BRIDGESTONE"},{"linha":"TBR - Radial","codigo":"101320","descricao":"PNEU BRIDGESTONE L325Z 295/80R22.5","marca":"BRIDGESTONE"},{"linha":"TBR - Radial","codigo":"101579","descricao":"PNEU FIRESTONE FS558 215/75R17.5","marca":"FIRESTONE"},{"linha":"TBR - Radial","codigo":"101588","descricao":"PNEU FIRESTONE FS558 235/75R17.5","marca":"FIRESTONE"},{"linha":"TBR - Radial","codigo":"101580","descricao":"PNEU FIRESTONE FS440 275/80R22.5","marca":"FIRESTONE"},{"linha":"TBR - Radial","codigo":"101581","descricao":"PNEU FIRESTONE FS440 295/80R22.5","marca":"FIRESTONE"},{"linha":"TBR - Radial","codigo":"101118","descricao":"PNEU FIRESTONE FD663II 275/80R22.5","marca":"FIRESTONE"},{"linha":"TBR - Radial","codigo":"101572","descricao":"PNEU FIRESTONE FD663II 295/80R22.5","marca":"FIRESTONE"},{"linha":"TBR - Radial","codigo":"102162","descricao":"PNEU FIRESTONE FD601 275/80R22.5","marca":"FIRESTONE"},{"linha":"TBR - Radial","codigo":"11656","descricao":"PNEU FIRESTONE T822 275/80R22.5","marca":"FIRESTONE"},{"linha":"TBR - Radial","codigo":"11655","descricao":"PNEU FIRESTONE T822 295/80R22.5","marca":"FIRESTONE"},{"linha":"TBR - Radial","codigo":"13310","descricao":"PNEU FIRESTONE T831 275/80R22.5","marca":"FIRESTONE"},{"linha":"TBR - Radial","codigo":"101574","descricao":"PNEU FIRESTONE T831 295/80R22.5","marca":"FIRESTONE"},{"linha":"TBR - Radial","codigo":"101114","descricao":"PNEU FIRESTONE T831 10.00R20","marca":"FIRESTONE"},{"linha":"TBR - Radial","codigo":"101571","descricao":"PNEU FIRESTONE T831 11.00R22","marca":"FIRESTONE"},{"linha":"TBR - Radial","codigo":"13311","descricao":"PNEU FIRESTONE T819 275/80R22.5","marca":"FIRESTONE"},{"linha":"TBR - Radial","codigo":"101573","descricao":"PNEU FIRESTONE T819 295/80R22.5","marca":"FIRESTONE"},{"linha":"TBR - Radial","codigo":"101569","descricao":"PNEU FIRESTONE T819 10.00R20","marca":"FIRESTONE"},{"linha":"TBR - Radial","codigo":"101117","descricao":"PNEU FIRESTONE T819 11.00R22","marca":"FIRESTONE"},{"linha":"TBR - Radial","codigo":"101568","descricao":"PNEU FIRESTONE FS557 10.00R20","marca":"FIRESTONE"},{"linha":"TBR - Radial","codigo":"101570","descricao":"PNEU FIRESTONE FS557 11.00R22","marca":"FIRESTONE"},{"linha":"TBR - Radial","codigo":"101116","descricao":"PNEU FIRESTONE T546 11.00R22","marca":"FIRESTONE"},{"linha":"TBR - Radial","codigo":"12975","descricao":"PNEU DAYTON D660 275/80R22.5","marca":"DAYTON"},{"linha":"TBR - Radial","codigo":"12976","descricao":"PNEU DAYTON D660 295/80R22.5","marca":"DAYTON"},{"linha":"TBR - Radial","codigo":"10131","descricao":"PNEU DAYTON D300 215/75R17.5","marca":"DAYTON"},{"linha":"TBR - Radial","codigo":"10024","descricao":"PNEU DAYTON D300 275/80R22.5","marca":"DAYTON"},{"linha":"TBR - Radial","codigo":"10025","descricao":"PNEU DAYTON D300 295/80R22.5","marca":"DAYTON"},{"linha":"TBR - Radial","codigo":"101630","descricao":"PNEU DAYTON D450 275/80R22.5","marca":"DAYTON"},{"linha":"TBS - Diagonal","codigo":"100842","descricao":"PNEU ANTEO AT52 7.00-16 10PR","marca":"ANTEO"},{"linha":"TBS - Diagonal","codigo":"101830","descricao":"PNEU ANTEO AT59 7.00-16 10PR","marca":"ANTEO"},{"linha":"TBS - Diagonal","codigo":"101087","descricao":"PNEU ANTEO AP22 7.50-16 12PR","marca":"ANTEO"},{"linha":"TBS - Diagonal","codigo":"101082","descricao":"PNEU ANTEO AT52 7.50-16 10PR","marca":"ANTEO"},{"linha":"TBS - Diagonal","codigo":"101628","descricao":"PNEU ANTEO AT52 7.50-16 12PR","marca":"ANTEO"},{"linha":"TBS - Diagonal","codigo":"100579","descricao":"PNEU ANTEO AT59 7.50-16 10PR","marca":"ANTEO"},{"linha":"TBS - Diagonal","codigo":"100580","descricao":"PNEU ANTEO AT59 9.00-20 14PR","marca":"ANTEO"},{"linha":"TBS - Diagonal","codigo":"101341","descricao":"PNEU ANTEO AT65 9.00-20 14PR","marca":"ANTEO"},{"linha":"TBS - Diagonal","codigo":"101342","descricao":"PNEU ANTEO AT59 10.00-20 16PR","marca":"ANTEO"},{"linha":"TBS - Diagonal","codigo":"101083","descricao":"PNEU ANTEO AT65 10.00-20 16PR","marca":"ANTEO"},{"linha":"TBS - Diagonal","codigo":"101936","descricao":"PNEU ANTEO AT65 11.00-22 16PR","marca":"ANTEO"},{"linha":"Passeio / Camionete","codigo":"101339","descricao":"PNEU DUNLOP TOURING 79T 165/70R13","marca":"DUNLOP"},{"linha":"Passeio / Camionete","codigo":"101340","descricao":"PNEU DUNLOP TOURING 82T 175/70R13","marca":"DUNLOP"},{"linha":"Passeio / Camionete","codigo":"100531","descricao":"PNEU FIRESTONE F700 175/65R14","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"100532","descricao":"PNEU FIRESTONE F700 175/70R14","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"100541","descricao":"PNEU BRIDGESTONE DLR A/T REVO2 175/70R14","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"100537","descricao":"PNEU FIRESTONE F700 185/65R14","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"100553","descricao":"PNEU FIRESTONE F700 185/70R14","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"101788","descricao":"PNEU BRIDGESTONE ECO EP150 185/60R15","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"102115","descricao":"PNEU FIRESTONE F700 185/60R15","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"100518","descricao":"PNEU BRIDGESTONE PNEU BRIDGESTONE ECO EP150 185/65R15","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"102080","descricao":"PNEU FIRESTONE F700 185/65R15","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"100543","descricao":"PNEU BRIDGESTONE ECO EP150 195/55R15","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"101546","descricao":"PNEU FIRESTONE F700 85H 195/55R15","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"101323","descricao":"PNEU BRIDGESTONE ECO EP150 195/60R15","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"101755","descricao":"PNEU FIRESTONE F700 195/60R15","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"100519","descricao":"PNEU BRIDGESTONE ECO EP150 195/65R15","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"101756","descricao":"PNEU FIRESTONE F700 195/65R15","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"101107","descricao":"PNEU BRIDGESTONE DLR A/T REVO2 205/65R15","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"100538","descricao":"PNEU BRIDGESTONE DLR A/T REVO2 205/60R15","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"101777","descricao":"PNEU BRIDGESTONE DLR A/T 205/70R15","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"13388","descricao":"PNEU FIRESTONE DESTINATION ATX 235/75R15","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"100564","descricao":"PNEU BRIDGESTONE ECO EP150 195/55R16","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"100548","descricao":"PNEU BRIDGESTONE ECO EP150 205/55R16","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"11740","descricao":"PNEU FIRESTONE F700 205/55R16","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"100565","descricao":"PNEU BRIDGESTONE ECO EP150 205/60R16","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"13383","descricao":"PNEU ROADCRUZA RA1100 AT 235/70R16","marca":"ROADCRUZA"},{"linha":"Passeio / Camionete","codigo":"101773","descricao":"PNEU BRIDGESTONE PNEU BRIDGESTONE DLR HT 684II 215/65R16","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"101843","descricao":"PNEU BRIDGESTONE DLR HT 684 245/70R16","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"101888","descricao":"PNEU FIRESTONE DESTINATION ATX 245/70R16","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"100516","descricao":"PNEU BRIDGESTONE DLR A/T REVO2 255/70R16","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"102121","descricao":"PNEU FIRESTONE DESTINATION ATX 255/75R15","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"102014","descricao":"PNEU FIRESTONE DESTINATION ATX 265/70R16","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"101102","descricao":"PNEU FIRESTONE DESTINATION ATX 265/75R16","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"101902","descricao":"PNEU WESTLAKE 185/35R17","marca":"WESTLAKE"},{"linha":"Passeio / Camionete","codigo":"11555","descricao":"PNEU BRIDGESTONE TRZ T005 205/55R17","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"100551","descricao":"PNEU BRIDGESTONE TRZ ER33 215/50R17","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"101785","descricao":"PNEU BRIDGESTONE TRZ ER370 215/55R17","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"12970","descricao":"PNEU FIRESTONE DESTINATION LE3 100H 215/60R17","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"101928","descricao":"PNEU BRIDGESTONE TRZ T005 225/45R17","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"101784","descricao":"PNEU BRIDGESTONE TRZ T005 225/50R17","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"13433","descricao":"PNEU FIRESTONE DESTINATION ATX 265/65R17","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"101970","descricao":"PNEU BRIDGESTONE DLR A/T 693III 265/65R17","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"100521","descricao":"PNEU BRIDGESTONE DLR H/T D684 265/65R17","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"12551","descricao":"PNEU BRIDGESTONE ALENZA 001 225/50R18","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"101772","descricao":"PNEU BRIDGESTONE DLR H/T 225/55R18","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"13504","descricao":"PNEU BRIDGESTONE ALENZA 100V 235/55R18","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"100533","descricao":"PNEU BRIDGESTONE ECO HT684II 265/60R18","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"101781","descricao":"PNEU BRIDGESTONE DLR SPORT 265/50R19","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"12775","descricao":"PNEU BRIDGESTONE DUELER SPORT 255/50R20","marca":"BRIDGESTONE"},{"linha":"Passeio / Camionete","codigo":"101576","descricao":"PNEU FIRESTONE CV5000 185R14C","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"101584","descricao":"PNEU FIRESTONE CV5000 195/70R15","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"101585","descricao":"PNEU FIRESTONE CV5000 205/70R15","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"100570","descricao":"PNEU FIRESTONE CV5000 225/70R15C","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"101582","descricao":"PNEU FIRESTONE CV5000 195/75R16C","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"101583","descricao":"PNEU FIRESTONE CV5000 205/75R16C","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"12905","descricao":"PNEU APTANY 215/75R16","marca":"APTANY"},{"linha":"Passeio / Camionete","codigo":"100569","descricao":"PNEU FIRESTONE CV5000 225/65R16C","marca":"FIRESTONE"},{"linha":"Passeio / Camionete","codigo":"101815","descricao":"PNEU FIRESTONE CV5000 225/75R16C","marca":"FIRESTONE"},{"linha":"AG / OTR - Multimarca","codigo":"101900","descricao":"PNEU FORERUNNER R-1 6.00-14 8PR","marca":"FORERUNNER"},{"linha":"AG / OTR - Multimarca","codigo":"101500","descricao":"PNEU MAGGION FRONTIERA 6.50/80-12 4PR","marca":"MAGGION"},{"linha":"AG / OTR - Multimarca","codigo":"100542","descricao":"PNEU MAGGION R1 5.00/6-12 4PR","marca":"MAGGION"},{"linha":"AG / OTR - Multimarca","codigo":"101833","descricao":"PNEU MAGGION MFT2 4.00-15 4PR","marca":"MAGGION"},{"linha":"AG / OTR - Multimarca","codigo":"101885","descricao":"PNEU MAGGION FRONTIERA2 R-1 7.5L-15 8PR","marca":"MAGGION"},{"linha":"AG / OTR - Multimarca","codigo":"101887","descricao":"PNEU MAGGION IMPLEMENTO 6.00-16 6PR","marca":"MAGGION"},{"linha":"AG / OTR - Multimarca","codigo":"101098","descricao":"PNEU MAGGION MILITAR 7.00-16 12PR","marca":"MAGGION"},{"linha":"AG / OTR - Multimarca","codigo":"101743","descricao":"PNEU MAGGION IMPLEMENTO 7.50-16 10PR","marca":"MAGGION"},{"linha":"AG / OTR - Multimarca","codigo":"100875","descricao":"PNEU MAGGION MTF2 7.50-16 8PR","marca":"MAGGION"},{"linha":"AG / OTR - Multimarca","codigo":"101525","descricao":"PNEU MAGGION FRONTIERA 7.50-16 8PR","marca":"MAGGION"},{"linha":"AG / OTR - Multimarca","codigo":"101520","descricao":"PNEU MAGGION FRONTIERA 2 7.00-18 10PR","marca":"MAGGION"},{"linha":"AG / OTR - Multimarca","codigo":"101521","descricao":"PNEU MAGGION MTF2 7.50-18 10PR","marca":"MAGGION"},{"linha":"AG / OTR - Multimarca","codigo":"10833","descricao":"PNEU MAGGION MHF 10.5/80-18 10PR","marca":"MAGGION"},{"linha":"AG / OTR - Multimarca","codigo":"101524","descricao":"PNEU MAGGION MHF 10.5/80-18 12PR","marca":"MAGGION"},{"linha":"AG / OTR - Multimarca","codigo":"101459","descricao":"PNEU MAGGION FRONTIERA 2 8.00-18 12PR","marca":"MAGGION"},{"linha":"AG / OTR - Multimarca","codigo":"101929","descricao":"PNEU MAGGION NHS 7.50-18 10PR","marca":"MAGGION"},{"linha":"AG / OTR - Multimarca","codigo":"12835","descricao":"PNEU ANTEO AI28 10.5/65-16 10PR","marca":"ANTEO"},{"linha":"AG / OTR - Multimarca","codigo":"13537","descricao":"PNEU ANTEO AF500 9.00-16 10PR","marca":"ANTEO"},{"linha":"AG / OTR - Multimarca","codigo":"102026","descricao":"PNEU PIRELLI TM75 R-1 6.00-12 6PR","marca":"PIRELLI"},{"linha":"AG / OTR - Multimarca","codigo":"101491","descricao":"PNEU PIRELLI TD500 9.00-16 10PR","marca":"PIRELLI"},{"linha":"AG / OTR - Multimarca","codigo":"102022","descricao":"PNEU PIRELLI PD22 R2 12.4-24 8PR","marca":"PIRELLI"},{"linha":"AG / OTR - Multimarca","codigo":"101464","descricao":"PNEU PIRELLI PD22 18.4-26 10PR","marca":"PIRELLI"},{"linha":"AG / OTR - Multimarca","codigo":"13361","descricao":"PNEU PIRELLI 23.1-26 PD22 10PR TT","marca":"PIRELLI"},{"linha":"AG / OTR - Multimarca","codigo":"12938","descricao":"PNEU PIRELLI TM95 14.9-28 08PR","marca":"PIRELLI"},{"linha":"AG / OTR - Multimarca","codigo":"101763","descricao":"PNEU PIRELLI PD22 14.9-28 06PR","marca":"PIRELLI"},{"linha":"AG / OTR - Multimarca","codigo":"11577","descricao":"PNEU PIRELLI PD22 R2 18.4-34 08PR","marca":"PIRELLI"},{"linha":"AG / OTR - Multimarca","codigo":"12646","descricao":"PNEU PIRELLI PD22 R2 18.4-38 14PR","marca":"PIRELLI"},{"linha":"AG / OTR - Multimarca","codigo":"12647","descricao":"PNEU PIRELLI TM95 18.4-38 R1 TT 12PR","marca":"PIRELLI"},{"linha":"AG / OTR - Multimarca","codigo":"11967","descricao":"PNEU PIRELLI PD22 R2 20.8-38 10PR","marca":"PIRELLI"},{"linha":"AG / OTR - Multimarca","codigo":"11971","descricao":"PNEU PIRELLI PHP 85 520/85R42","marca":"PIRELLI"},{"linha":"AG / OTR - Multimarca","codigo":"12567","descricao":"PNEU GOODYEAR FLOT II I3 TL 400/60R15.5 16PR","marca":"GOODYEAR"},{"linha":"AG / OTR - Multimarca","codigo":"13262","descricao":"PNEU GOODYEAR LABORER TL 11L-16 12PR","marca":"GOODYEAR"},{"linha":"AG / OTR - Multimarca","codigo":"12831","descricao":"PNEU GOODYEAR 250/80-18 SUPREME TFC 12PR TL","marca":"GOODYEAR"},{"linha":"AG / OTR - Multimarca","codigo":"12564","descricao":"PNEU GOODYEAR GRIP LUG IMPLT TL I3 12.5/80-18 10PR","marca":"GOODYEAR"},{"linha":"AG / OTR - Multimarca","codigo":"12565","descricao":"PNEU GOODYEAR GRIP IMPL I3 TL 16/70-20 10PR","marca":"GOODYEAR"},{"linha":"AG / OTR - Multimarca","codigo":"13397","descricao":"PNEU GOODYEAR LABORER TL F3 16/70-20 10PR","marca":"GOODYEAR"},{"linha":"AG / OTR - Multimarca","codigo":"12566","descricao":"PNEU GOODYEAR FLOT I3 TL 500/60-22.5 16PR","marca":"GOODYEAR"},{"linha":"AG / OTR - Multimarca","codigo":"12571","descricao":"PNEU GOODYEAR SUPER ARROZ TT R2 14.9-24 12PR","marca":"GOODYEAR"},{"linha":"AG / OTR - Multimarca","codigo":"12568","descricao":"PNEU GOODYEAR SUPER ARROZ II TL R2 28L-26 16PR","marca":"GOODYEAR"},{"linha":"AG / OTR - Multimarca","codigo":"12570","descricao":"PNEU GOODYEAR SUPER ARROZ 3 PLUS TT R2 14.9-28 8PR","marca":"GOODYEAR"},{"linha":"AG / OTR - Multimarca","codigo":"12572","descricao":"PNEU GOODYEAR OPTITRAC R1W TL 460/85R30","marca":"GOODYEAR"},{"linha":"AG / OTR - Multimarca","codigo":"12282","descricao":"PNEU GOODYEAR DYNA TORQUE 24.5-32 12PR","marca":"GOODYEAR"},{"linha":"AG / OTR - Multimarca","codigo":"12569","descricao":"PNEU GOODYEAR SUPER ARROZ TT R2 18.4-34 12PR","marca":"GOODYEAR"},{"linha":"AG / OTR - Multimarca","codigo":"12574","descricao":"PNEU GOODYEAR UTR SPRAYE TL R1 320/90R42","marca":"GOODYEAR"},{"linha":"AG / OTR - Multimarca","codigo":"101493","descricao":"PNEU OTRMAX TL I3W 10-16.5 12PR","marca":""},{"linha":"AG / OTR - Multimarca","codigo":"13132","descricao":"PNEU GRIPMASTER GMULTI TL 10R16.5","marca":"GRIPMASTER"},{"linha":"AG / OTR - Multimarca","codigo":"102027","descricao":"PNEU GRIPMASTER TL 10-16.5 10PR","marca":"GRIPMASTER"},{"linha":"AG / OTR - Multimarca","codigo":"12420","descricao":"PNEU FORERUNNER SKS-1 TL 12-16.5 12PR","marca":""},{"linha":"AG / OTR - Multimarca","codigo":"11990","descricao":"PNEU GRIPMASTER 12-16.5 12PR","marca":"GRIPMASTER"},{"linha":"AG / OTR - Multimarca","codigo":"13343","descricao":"PNEU FORERUNNER R4 12.5/80-18 12PR TL","marca":"FORERUNNER"},{"linha":"AG / OTR - Multimarca","codigo":"13076","descricao":"PNEU FORERUNNER 19.5L-24 R4 12PR TL","marca":"FORERUNNER"},{"linha":"AG / OTR - Multimarca","codigo":"12673","descricao":"PNEU GOODYEAR GRIP LUG TL I3 12.5/80-18 10PR","marca":"GOODYEAR"},{"linha":"AG / OTR - Multimarca","codigo":"13472","descricao":"PNEU GOODYEAR IT525 19.5L-24 R4 12PR TL","marca":"GOODYEAR"},{"linha":"AG / OTR - Multimarca","codigo":"13020","descricao":"PNEU GOODYEAR ROAD GRADER 13.00-24 12PR TT","marca":"GOODYEAR"},{"linha":"AG / OTR - Multimarca","codigo":"13271","descricao":"PNEU GOODYEAR TG2 14.00R24 153A8 TL G2","marca":"GOODYEAR"},{"linha":"AG / OTR - Multimarca","codigo":"13514","descricao":"PNEU TITAN 17.5-25 G2/L2 16PR TL","marca":"GOODYEAR"},{"linha":"Industrial - Pequeno porte","codigo":"100904","descricao":"PNEU IMPORTADO 3.50-8","marca":"IMPORTADO"},{"linha":"Industrial - Pequeno porte","codigo":"100971","descricao":"PNEU GRIPMASTER GIND 230 5.00-8 10PR (C)","marca":"GRIPMASTER"},{"linha":"Industrial - Pequeno porte","codigo":"102072","descricao":"PNEU GRIPMASTER GIND 230 6.00-9 10PR (C)","marca":"GRIPMASTER"},{"linha":"Industrial - Pequeno porte","codigo":"102081","descricao":"PNEU GRIPMASTER GIND 230 6.50-10 10PR (C)","marca":"GRIPMASTER"},{"linha":"Industrial - Pequeno porte","codigo":"101972","descricao":"PNEU WESTLAKE PNEU WESTLAKE CL619 6.50-10 10PR (C)","marca":"WESTLAKE"},{"linha":"Industrial - Pequeno porte","codigo":"102002","descricao":"PNEU GRIPMASTER GIND 230 7.00-12 12PR (C)","marca":"GRIPMASTER"},{"linha":"Industrial - Pequeno porte","codigo":"101973","descricao":"PNEU WESTLAKE CL619 7.00-12 12PR (C)","marca":"WESTLAKE"},{"linha":"Industrial - Pequeno porte","codigo":"102019","descricao":"PNEU WESTLAKE CL619 28.9-15 14PR (C)","marca":"WESTLAKE"},{"linha":"Industrial - Pequeno porte","codigo":"102073","descricao":"PNEU GRIPMASTER GIND 230 28.9-15 14PR(C)","marca":"GRIPMASTER"},{"linha":"Industrial - Pequeno porte","codigo":"12309","descricao":"PNEU SPEEDMAX 7.00-15 12PR TT","marca":"SPEEDMAX"},{"linha":"Industrial - Pequeno porte","codigo":"100886","descricao":"PNEU MAGGION PNEU MAGGION MVI 7.50-15 12PR","marca":"MAGGION"},{"linha":"Industrial - Pequeno porte","codigo":"12391","descricao":"PNEU PIRELLI PNEU PIRELLI CI84 7.50-15 10PR","marca":"PIRELLI"},{"linha":"Industrial - Pequeno porte","codigo":"102074","descricao":"PNEU GRIPMASTER GIND 230 8.25-15 14PR (C)","marca":"GRIPMASTER"},{"linha":"Industrial - Pequeno porte","codigo":"100967","descricao":"PNEU PNEU GRIPMASTER G-IND230 250-15 18PR (C)","marca":""},{"linha":"Industrial - Pequeno porte","codigo":"12289","descricao":"PNEU UNISOL PNEU TOTALFLEX 5.00-8 MACICO","marca":"UNISOL"},{"linha":"Industrial - Pequeno porte","codigo":"11213","descricao":"PNEU UNISOL PNEU TOTALFLEX 18X7-8 MACICO","marca":"UNISOL"},{"linha":"Industrial - Pequeno porte","codigo":"11231","descricao":"PNEU UNISOL PNEU ECOLINE BRANCO 6.00-9 MACICO","marca":"UNISOL"},{"linha":"Industrial - Pequeno porte","codigo":"102040","descricao":"PNEU UNISOL PNEU TOTALFLEX 6.00-9 MACICO","marca":"UNISOL"},{"linha":"Industrial - Pequeno porte","codigo":"100594","descricao":"PNEU UNISOL PNEU TOTALFLEX 6.50-10 MACICO","marca":"UNISOL"},{"linha":"Industrial - Pequeno porte","codigo":"11417","descricao":"PNEU UNISOL PNEU ECOLINE BRANCO 7.00-12 MACICO","marca":"UNISOL"},{"linha":"Industrial - Pequeno porte","codigo":"102004","descricao":"PNEU UNISOL PNEU TOTALFLEX 7.00-12 MACICO","marca":"UNISOL"},{"linha":"Industrial - Pequeno porte","codigo":"101909","descricao":"PNEU UNISOL PNEU TOTALFLEX 28.9-15 MACICO","marca":"UNISOL"},{"linha":"AG / OTR - Alliance","codigo":"13354","descricao":"PNEU ALLIANCE 14.9-24 8PR TT R2","marca":"ALLIANCE"},{"linha":"AG / OTR - Alliance","codigo":"13356","descricao":"PNEU ALLIANCE 23.1-26 12PR TT R2","marca":"ALLIANCE"},{"linha":"AG / OTR - Alliance","codigo":"13355","descricao":"PNEU ALLIANCE 28L-26 12PR TT R2","marca":"ALLIANCE"},{"linha":"AG / OTR - Alliance","codigo":"13352","descricao":"PNEU ALLIANCE 14.9-28 8PR TT R2","marca":"ALLIANCE"},{"linha":"AG / OTR - Alliance","codigo":"13353","descricao":"PNEU ALLIANCE 18.4-30 12PR TT R2","marca":"ALLIANCE"},{"linha":"AG / OTR - Alliance","codigo":"13358","descricao":"PNEU ALLIANCE 420/90R30 142A8 TL R2","marca":"ALLIANCE"},{"linha":"AG / OTR - Alliance","codigo":"13357","descricao":"PNEU ALLIANCE 23.1-34 14PR TT R2","marca":"ALLIANCE"},{"linha":"AG / OTR - Trelleborg","codigo":"12985","descricao":"PNEU TRELLEBORG T404 400/60-15.5 TL","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"12986","descricao":"PNEU TRELLEBORG T404 500/60-22.5 TL","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"13100","descricao":"PNEU TRELLEBORG T404 600/50-22.5 TL","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"13351","descricao":"PNEU TRELLEBORG T510 11L-15 12PR TL","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"13319","descricao":"PNEU TRELLEBORG TM90 8.3-24 8PR TT","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"12978","descricao":"PNEU TRELLEBORG TM90 9.5-24 8PR TT","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"12979","descricao":"PNEU TRELLEBORG TM90 12.4-24 12PR TL","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"13382","descricao":"PNEU TRELLEBORG TM90 14.9-24 8PR TT","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"13099","descricao":"PNEU TRELLEBORG TM90 14.9-26 8PR TL","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"12981","descricao":"PNEU TRELLEBORG TM90 14.9-28 12PR TL","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"13378","descricao":"PNEU TRELLEBORG TM90 16.9-28 8PR TL","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"13101","descricao":"PNEU TRELLEBORG TM90 18.4-30 12PR TL","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"13318","descricao":"PNEU TRELLEBORG TM90 18.4-34 12PR TL","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"13377","descricao":"PNEU TRELLEBORG TM90 18.4-38 12PR TL","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"12982","descricao":"PNEU TRELLEBORG TM90 15.5-38 8PR TT","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"12987","descricao":"PNEU TRELLEBORG TM150 VF 380/90R46 CFO TL","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"12983","descricao":"PNEU TRELLEBORG TM600 320/85R24 TL","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"12984","descricao":"PNEU TRELLEBORG TM600 380/85R24 TL","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"12988","descricao":"PNEU TRELLEBORG TM600 460/85R30 TL","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"13499","descricao":"PNEU TRELLEBORG TM600 HD 520/85R38 TL","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"13500","descricao":"PNEU TRELLEBORG TH400 480/80R26 IND TL","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"12989","descricao":"PNEU TRELLEBORG TH400 380/80R38 TL","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"13503","descricao":"PNEU TRELLEBORG TD-02 9.5-24 8PR TT","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"13379","descricao":"PNEU TRELLEBORG TD13 16.9-28 12PR TT","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"13376","descricao":"PNEU TRELLEBORG TD13 18.4-30 12PR TT","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"13375","descricao":"PNEU TRELLEBORG TD19 14.9-24 8PR TT","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"13380","descricao":"PNEU TRELLEBORG AC70 800/65R32 R1W TL","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"13502","descricao":"PNEU TRELLEBORG HC1000 VF 380/80R38 CFO TL","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"13501","descricao":"PNEU TRELLEBORG TI-06 16.9-28 IND 12PR TL","marca":"TRELLEBORG"},{"linha":"AG / OTR - Trelleborg","codigo":"13381","descricao":"PNEU TRELLEBORG AS GRID 23.1-26 18PR TL","marca":"TRELLEBORG"},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101483","descricao":"PNEU BRIDGESTONE/FIRESTONE ALL TRACTION UTILITY 19.5L-24 12PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101867","descricao":"PNEU BRIDGESTONE/FIRESTONE SUPER ALL TRACTION FWD 18.4-26 (480/80R26) 10PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"102020","descricao":"PNEU BRIDGESTONE/FIRESTONE SUPER ALL TRACTION FWD 16.9-28 (420/85R28) 12PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101863","descricao":"PNEU BRIDGESTONE/FIRESTONE SUPER ALL TRACTION 23 12.4-24 (320/85R24) 6PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101462","descricao":"PNEU BRIDGESTONE/FIRESTONE SUPER ALL TRACTION 23 14.9-24 (380/85R24) 6PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101463","descricao":"PNEU BRIDGESTONE/FIRESTONE SUPER ALL TRACTION 23 14.9-26 (380/85R26) 6PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101496","descricao":"PNEU BRIDGESTONE/FIRESTONE SUPER ALL TRACTION 23 16.9-26 (420/85R26) 8PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101865","descricao":"PNEU BRIDGESTONE/FIRESTONE SUPER ALL TRACTION 23 23.1-30 (600/70R30) 12PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"100555","descricao":"PNEU BRIDGESTONE/FIRESTONE SUPER ALL TRACTION 23 18.4-34 (480/70R34) 10PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101855","descricao":"PNEU BRIDGESTONE/FIRESTONE SUPER ALL TRACTION 23 18.4-34 (480/70R34) 12PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101475","descricao":"PNEU BRIDGESTONE/FIRESTONE SUPER ALL TRACTION 23 20.8-38 (520/85R38) 12PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"100546","descricao":"PNEU BRIDGESTONE/FIRESTONE SUPER ALL TRACTION 23 20.8-38 (520/85R38) 14PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101866","descricao":"PNEU BRIDGESTONE/FIRESTONE SUPER ALL TRACTION II 23 18.4-30 (460/85R30) 10PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101471","descricao":"PNEU BRIDGESTONE/FIRESTONE SUPER ALL TRACTION II 23 18.4-30 (460/85R30) 12PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101858","descricao":"PNEU BRIDGESTONE/FIRESTONE SUPER ALL TRACTION II 23 13.6-38 (380/80R38) 14PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101499","descricao":"PNEU BRIDGESTONE/FIRESTONE CHAMPION GROUND GRIP 16.9/14-24 (420/70R24) 8PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101467","descricao":"PNEU BRIDGESTONE/FIRESTONE CHAMPION GROUND GRIP 12.4/11-28 (320/80R28) 6PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101856","descricao":"PNEU BRIDGESTONE/FIRESTONE CHAMPION GROUND GRIP 12.4/11-36 (320/85R36) 12PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101857","descricao":"PNEU BRIDGESTONE/FIRESTONE CHAMPION GROUND GRIP 12.4/11-38 (320/85R38) 14PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101946","descricao":"PNEU BRIDGESTONE/FIRESTONE RADIAL DEEP TREAD 23 R-1 W 520/85R42 165BPR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"100554","descricao":"PNEU BRIDGESTONE/FIRESTONE RADIAL ALL TRACTION DT R-1 W 750/65R26 (28L-26) 177BPR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"100528","descricao":"PNEU BRIDGESTONE/FIRESTONE RADIAL ALL TRACTION DT R-1 W 600/65R28 (23.1-28) 147BPR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101502","descricao":"PNEU BRIDGESTONE/FIRESTONE RADIAL ALL TRACTION DT R-1 W 420/90R30 (16.9-30) 145BPR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101507","descricao":"PNEU BRIDGESTONE/FIRESTONE RADIAL ALL TRACTION DT R-1 W 600/70R30 (23.1-30) 162BPR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101854","descricao":"PNEU BRIDGESTONE/FIRESTONE RADIAL ALL TRACTION DT R-1 W 800/65R32 (30.5-32) 172BPR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101510","descricao":"PNEU BRIDGESTONE/FIRESTONE RADIAL ALL TRACTION RC VF 380/90R46 (14.9-46) 173DPR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101511","descricao":"PNEU BRIDGESTONE/FIRESTONE RADIAL 9000 R-1 W 480/70R34 (18.4-34) 155BPR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101860","descricao":"PNEU BRIDGESTONE/FIRESTONE PERFORMER EVO R-1W 520/85R38 (20.8-38) 155DPR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101541","descricao":"PNEU BRIDGESTONE/FIRESTONE PERFORMER 85 R-1W 380/85R24 (12.4-24) 131DPR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101529","descricao":"PNEU BRIDGESTONE/FIRESTONE MT-HARVEST R-1W 650/75R32 (24.5-32) 172DPR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"100007","descricao":"PNEU BRIDGESTONE/FIRESTONE MT-HARVEST R-1W 650/75R32 (24.5-32) 172BPR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"102017","descricao":"PNEU BRIDGESTONE/FIRESTONE CHAMPION SPADE GRIP II 18.4-30 (460/85R30) 6PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101504","descricao":"PNEU BRIDGESTONE/FIRESTONE CHAMPION SPADE GRIP II 23.1-30 (600/70R30) 10PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"100557","descricao":"PNEU BRIDGESTONE/FIRESTONE SGG ROAD BUILDER - G2 13.00-24 12PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"100559","descricao":"PNEU BRIDGESTONE/FIRESTONE SGG ROAD BUILDER - G2 14.00-24 16PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101486","descricao":"PNEU BRIDGESTONE/FIRESTONE SRG LOADER DOZER - L3 17.5-25 16PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"102083","descricao":"PNEU BRIDGESTONE/FIRESTONE FG L2 / G2 17.5-25 16PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"101889","descricao":"PNEU BRIDGESTONE/FIRESTONE FG L2 / G2 23.5-25 ***PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"12203","descricao":"PNEU BRIDGESTONE/FIRESTONE MULTI BLOCK T - E3 / L3 17.5R25 ** E3 / *L3PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"11998","descricao":"PNEU BRIDGESTONE/FIRESTONE MULTI BLOCK T - E3 / L3 20.5R25 ** E3 / *L3PR","marca":""},{"linha":"AG / OTR - Bridgestone / Firestone","codigo":"11999","descricao":"PNEU BRIDGESTONE/FIRESTONE MULTI BLOCK T - E3 / L3 23.5R25 ** E3 / *L3PR","marca":""}];
+
+function brl(n){return n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
+function moeda(txt){
+  var s = (txt||'').replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',','.');
+  var v = parseFloat(s);
+  return isNaN(v) ? 0 : v;
+}
+
+var box = document.getElementById('itens');
+var seq = 0;
+
+function novoItem(){
+  seq++;
+  var d = document.createElement('div');
+  d.className='item';
+  d.innerHTML =
+   '<h4>Item '+seq+'</h4>'+
+   '<button type="button" class="remover" title="Remover">&times;</button>'+
+   '<label>Produto</label>'+
+   '<div class="busca">'+
+     '<input class="q" placeholder="Digite medida, marca ou modelo" autocomplete="off">'+
+     '<div class="lista"></div>'+
+   '</div>'+
+   '<div class="dupla">'+
+     '<div><label>Quantidade</label><input class="qt" type="number" min="1" step="1" value="1" inputmode="numeric"></div>'+
+     '<div><label>Valor unit&aacute;rio</label><input class="vl" inputmode="decimal" placeholder="0,00"></div>'+
+   '</div>'+
+   '<div class="sub">Subtotal: <b class="st">R$ 0,00</b></div>';
+  box.appendChild(d);
+  ligar(d);
+  recalcular();
+}
+
+function ligar(d){
+  var q = d.querySelector('.q'), lista = d.querySelector('.lista');
+  var qt = d.querySelector('.qt'), vl = d.querySelector('.vl');
+
+  function fechar(){ lista.style.display='none'; }
+
+  q.addEventListener('input', function(){
+    var t = q.value.trim().toUpperCase();
+    if(t.length < 2){ fechar(); return; }
+    var termos = t.split(/\s+/);
+    var achou = PRODUTOS.filter(function(p){
+      var alvo = (p.descricao+' '+p.linha+' '+p.codigo).toUpperCase();
+      return termos.every(function(x){ return alvo.indexOf(x) >= 0; });
+    }).slice(0,40);
+    if(!achou.length){ fechar(); return; }
+    lista.innerHTML = achou.map(function(p){
+      return '<div data-d="'+p.descricao.replace(/"/g,'&quot;')+'">'+p.descricao+
+             '<small>'+p.linha+' &middot; c&oacute;d. '+p.codigo+'</small></div>';
+    }).join('');
+    lista.style.display='block';
+    Array.prototype.forEach.call(lista.children, function(el){
+      el.addEventListener('mousedown', function(ev){
+        ev.preventDefault();
+        q.value = el.getAttribute('data-d');
+        fechar();
+        vl.focus();
+      });
+    });
+  });
+  q.addEventListener('blur', function(){ setTimeout(fechar, 150); });
+
+  vl.addEventListener('blur', function(){
+    var v = moeda(vl.value);
+    vl.value = v ? v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) : '';
+    recalcular();
+  });
+  qt.addEventListener('input', recalcular);
+  vl.addEventListener('input', recalcular);
+  d.querySelector('.remover').addEventListener('click', function(){
+    d.remove(); renumerar(); recalcular();
+  });
+}
+
+function renumerar(){
+  Array.prototype.forEach.call(box.children, function(d,i){
+    d.querySelector('h4').textContent = 'Item '+(i+1);
+  });
+  seq = box.children.length;
+}
+
+function recalcular(){
+  var total = 0;
+  Array.prototype.forEach.call(box.children, function(d){
+    var qt = parseFloat(d.querySelector('.qt').value)||0;
+    var vl = moeda(d.querySelector('.vl').value);
+    var st = qt*vl;
+    total += st;
+    d.querySelector('.st').textContent = brl(st);
+  });
+  document.getElementById('total').textContent = brl(total);
+  return total;
+}
+
+function coletar(){
+  var itens = [];
+  Array.prototype.forEach.call(box.children, function(d){
+    var desc = d.querySelector('.q').value.trim();
+    var qt = parseFloat(d.querySelector('.qt').value)||0;
+    var vl = moeda(d.querySelector('.vl').value);
+    if(desc && qt) itens.push({descricao:desc, quantidade:qt, unitario:vl, subtotal:qt*vl});
+  });
+  return {
+    nome: document.getElementById('nome').value.trim(),
+    cnpj: document.getElementById('cnpj').value.trim(),
+    celular: document.getElementById('celular').value.trim(),
+    endereco: document.getElementById('endereco').value.trim(),
+    cidade: document.getElementById('cidade').value.trim(),
+    uf: document.getElementById('uf').value,
+    vendedor: document.getElementById('vendedor').value.trim(),
+    evento: document.getElementById('evento').value.trim(),
+    observacoes: document.getElementById('obs').value.trim(),
+    itens: itens,
+    total: itens.reduce(function(a,i){return a+i.subtotal;},0),
+    data: new Date().toLocaleDateString('pt-BR')
+  };
+}
+
+document.getElementById('add').addEventListener('click', novoItem);
+
+var ENDPOINT = 'https://script.google.com/macros/s/AKfycbyUjWvYVja3ccQL-AHFaZzXWOaPA_QDmMizH5N7kmYcU2ygdBG-IAYUmndRN6xzBneM/exec';
+
+function enviarPlanilha(o){
+  return fetch(ENDPOINT, {
+    method:'POST',
+    mode:'no-cors',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify(o)
+  });
+}
+
+function guardarPendente(o){
+  var f=[];
+  try{ f=JSON.parse(localStorage.getItem('hoff_pendentes')||'[]'); }catch(e){}
+  f.push(o);
+  try{ localStorage.setItem('hoff_pendentes', JSON.stringify(f)); }catch(e){}
+  atualizarAviso();
+}
+
+function atualizarAviso(){
+  var f=[];
+  try{ f=JSON.parse(localStorage.getItem('hoff_pendentes')||'[]'); }catch(e){}
+  var el=document.getElementById('pendentes');
+  if(f.length){
+    el.style.display='block';
+    el.textContent = f.length+' or\u00e7amento(s) aguardando envio \u2014 toque para reenviar';
+  } else { el.style.display='none'; }
+}
+
+function reenviarPendentes(){
+  var f=[];
+  try{ f=JSON.parse(localStorage.getItem('hoff_pendentes')||'[]'); }catch(e){}
+  if(!f.length) return;
+  var fila = Promise.resolve();
+  f.forEach(function(o){ fila = fila.then(function(){ return enviarPlanilha(o); }); });
+  fila.then(function(){
+    localStorage.removeItem('hoff_pendentes');
+    atualizarAviso();
+    alert('Or\u00e7amentos pendentes enviados.');
+  }).catch(function(){
+    alert('Ainda sem conex\u00e3o. Os or\u00e7amentos continuam guardados.');
+  });
+}
+
+document.getElementById('pendentes').addEventListener('click', reenviarPendentes);
+atualizarAviso();
+window.addEventListener('online', reenviarPendentes);
+
+document.getElementById('gerar').addEventListener('click', function(){
+  var o = coletar();
+  if(!o.nome){ alert('Preencha o nome do cliente.'); return; }
+  if(!o.itens.length){ alert('Adicione pelo menos um item.'); return; }
+
+  var btn = this;
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+  enviarPlanilha(o).then(function(){
+    btn.textContent = 'Gerar or\u00e7amento';
+    btn.disabled = false;
+  }).catch(function(){
+    guardarPendente(o);
+    btn.textContent = 'Gerar or\u00e7amento';
+    btn.disabled = false;
+  });
+  var linhas = o.itens.map(function(i,n){
+    return (n+1)+'. '+i.descricao+'\n   '+i.quantidade+' un x '+brl(i.unitario)+' = '+brl(i.subtotal);
+  }).join('\n');
+  var txt = 'ORCAMENTO - GRUPO HOFF\n'+o.data+'\n\n'+
+    'Cliente: '+o.nome+'\n'+
+    (o.cnpj?'CNPJ: '+o.cnpj+'\n':'')+
+    (o.celular?'Celular: '+o.celular+'\n':'')+
+    (o.endereco?'Endereco: '+o.endereco+'\n':'')+
+    (o.cidade?'Cidade: '+o.cidade+(o.uf?'/'+o.uf:'')+'\n':'')+
+    '\nITENS\n'+linhas+
+    '\n\nTOTAL: '+brl(o.total)+
+    (o.observacoes?'\n\nObs: '+o.observacoes:'')+
+    (o.evento?'\n\nEvento: '+o.evento:'')+
+    (o.vendedor?'\n\nVendedor: '+o.vendedor:'')+
+    '\n\nValores sujeitos a disponibilidade de estoque.';
+  if(navigator.share){
+    navigator.share({title:'Orcamento Grupo Hoff', text:txt}).catch(function(){});
+  } else {
+    navigator.clipboard.writeText(txt).then(function(){
+      alert('Orcamento copiado. Cole no WhatsApp do cliente.');
+    }, function(){
+      prompt('Copie o orcamento:', txt);
+    });
+  }
+});
+
+
+var cnpjEl = document.getElementById('cnpj');
+cnpjEl.addEventListener('input', function(){
+  var v = cnpjEl.value.replace(/\D/g,'').slice(0,14);
+  if(v.length > 12) v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2})/,'$1.$2.$3/$4-$5');
+  else if(v.length > 8) v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{0,4})/,'$1.$2.$3/$4');
+  else if(v.length > 5) v = v.replace(/^(\d{2})(\d{3})(\d{0,3})/,'$1.$2.$3');
+  else if(v.length > 2) v = v.replace(/^(\d{2})(\d{0,3})/,'$1.$2');
+  cnpjEl.value = v;
+});
+
+var celEl = document.getElementById('celular');
+celEl.addEventListener('input', function(){
+  var v = celEl.value.replace(/\D/g,'').slice(0,11);
+  if(v.length > 10) v = v.replace(/^(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3');
+  else if(v.length > 6) v = v.replace(/^(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3');
+  else if(v.length > 2) v = v.replace(/^(\d{2})(\d{0,5})/,'($1) $2');
+  celEl.value = v;
+});
+
+var cidEl = document.getElementById('cidade');
+var dl = document.getElementById('cidades');
+function carregarCidades(){
+  var g = [];
+  try { g = JSON.parse(localStorage.getItem('hoff_cidades')||'[]'); } catch(e){}
+  dl.innerHTML = g.map(function(c){ return '<option value="'+c+'">'; }).join('');
+}
+function guardarCidade(c){
+  if(!c) return;
+  var g = [];
+  try { g = JSON.parse(localStorage.getItem('hoff_cidades')||'[]'); } catch(e){}
+  c = c.trim();
+  if(g.indexOf(c) < 0){ g.push(c); g.sort(); }
+  try { localStorage.setItem('hoff_cidades', JSON.stringify(g)); } catch(e){}
+  carregarCidades();
+}
+cidEl.addEventListener('blur', function(){ guardarCidade(cidEl.value); });
+carregarCidades();
+
+var evEl = document.getElementById('evento');
+var dlEv = document.getElementById('eventos');
+function carregarEventos(){
+  var g = [];
+  try { g = JSON.parse(localStorage.getItem('hoff_eventos')||'[]'); } catch(e){}
+  dlEv.innerHTML = g.map(function(c){ return '<option value="'+c+'">'; }).join('');
+}
+function guardarEvento(c){
+  if(!c) return;
+  var g = [];
+  try { g = JSON.parse(localStorage.getItem('hoff_eventos')||'[]'); } catch(e){}
+  c = c.trim();
+  if(g.indexOf(c) < 0){ g.push(c); g.sort(); }
+  try { localStorage.setItem('hoff_eventos', JSON.stringify(g)); } catch(e){}
+  carregarEventos();
+}
+evEl.addEventListener('blur', function(){ guardarEvento(evEl.value); });
+carregarEventos();
+
+novoItem();
+</script>
+</body>
+</html>
