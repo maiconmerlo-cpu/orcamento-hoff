@@ -1,10 +1,10 @@
 """Robô de publicação do @maiconmerlo.
 
 Roda no GitHub Actions a cada 15 minutos. Publica pela API oficial do
-Instagram (Instagram Login) todo post de posts.json cujo horário já chegou
+Instagram (login unificado / usuário do sistema) todo post de posts.json cujo horário já chegou
 e que ainda não está em publicados.json.
 
-Segredo necessário no GitHub: IG_TOKEN (token de longa duração do Instagram).
+Segredo necessário no GitHub: IG_TOKEN (token de usuário do sistema do app "Agendador maiconmerlo", não expira).
 """
 import json
 import os
@@ -18,7 +18,8 @@ import requests
 PASTA = Path(__file__).parent
 POSTS = PASTA / "posts.json"
 PUBLICADOS = PASTA / "publicados.json"
-API = "https://graph.instagram.com/v21.0"
+API = "https://graph.facebook.com/v21.0"
+IG_USER_ID = os.environ.get("IG_USER_ID", "17841404701493839")  # @maiconmerlo
 JANELA_ATRASO = timedelta(hours=6)  # post mais atrasado que isso é pulado
 
 TOKEN = os.environ.get("IG_TOKEN", "").strip()
@@ -48,19 +49,19 @@ def esperar_pronto(container_id):
 def publicar(post):
     imagens = post["imagens"]
     if len(imagens) == 1:
-        c = api("POST", "me/media", image_url=imagens[0], caption=post["legenda"])["id"]
+        c = api("POST", f"{IG_USER_ID}/media", image_url=imagens[0], caption=post["legenda"])["id"]
     else:
         filhos = []
         for url in imagens[:10]:
-            filho = api("POST", "me/media", image_url=url, is_carousel_item="true")["id"]
+            filho = api("POST", f"{IG_USER_ID}/media", image_url=url, is_carousel_item="true")["id"]
             esperar_pronto(filho)
             filhos.append(filho)
         c = api(
-            "POST", "me/media",
+            "POST", f"{IG_USER_ID}/media",
             media_type="CAROUSEL", children=",".join(filhos), caption=post["legenda"],
         )["id"]
     esperar_pronto(c)
-    return api("POST", "me/media_publish", creation_id=c)["id"]
+    return api("POST", f"{IG_USER_ID}/media_publish", creation_id=c)["id"]
 
 
 def main():
@@ -68,7 +69,7 @@ def main():
         print("IG_TOKEN não configurado. Nada a fazer.")
         return 0
 
-    conta = api("GET", "me", fields="username")
+    conta = api("GET", IG_USER_ID, fields="username")
     print(f"Conectado como @{conta.get('username')}")
     if SO_TESTE:
         print("Teste de conexão OK.")
